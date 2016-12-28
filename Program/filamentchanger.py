@@ -3,6 +3,7 @@ from PySide import QtUiTools
 import os, sys
 import os.path as osp
 import ctypes #For adding the icon to windows taskbar
+import re
 
 #Add icon info
 icon_path = osp.join(osp.dirname(sys.modules[__name__].__file__), 'icon_filament.png')
@@ -31,6 +32,7 @@ def load_ui(file_name, where=None):
 
     return ui
 
+
 class FilamentChanger(QtGui.QWidget):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -53,6 +55,9 @@ class FilamentChanger(QtGui.QWidget):
         #SpinBoxs
         self.LayerSpinBox = self.findChild(QtGui.QSpinBox,'LayerSpinBox')
 
+        #Labels
+        self.LayerLabel = self.findChild(QtGui.QLabel,'LayerLabel')
+
         #CheckBox
         self.EnabledCheckBox = self.findChild(QtGui.QCheckBox,'EnabledCheckBox')
         self.CuraCheckBox = self.findChild(QtGui.QCheckBox,'CuraCheckBox')
@@ -63,11 +68,6 @@ class FilamentChanger(QtGui.QWidget):
         self.ExportBtn = self.findChild(QtGui.QPushButton,'ExportBtn')
         self.ResetBtn = self.findChild(QtGui.QPushButton,'ResetBtn')
         self.BrowseButton = self.findChild(QtGui.QPushButton,'BrowseButton')
-
-        #Configure widget ranges
-        #TODO: Change the max value to the last layer of the script.
-        #max_layer = sys.float_info.max
-        #self.LayerSpinBox.setMaximum(max_layer)
 
         #Connect slot and signals
         #CheckBoxs
@@ -84,10 +84,8 @@ class FilamentChanger(QtGui.QWidget):
         frameGm = self.frameGeometry()
         screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
         centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
-        print(centerPoint)
         finalPoint = centerPoint
         finalPoint.setY(finalPoint.y() - finalPoint.y()/3)
-        print(finalPoint)
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
     #functions
@@ -100,11 +98,10 @@ class FilamentChanger(QtGui.QWidget):
                                            defaultButton=QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
-            print("response is yes")
+            pass
             #TODO Add save function
 
     def OnBrowseButtonClicked(self):
-        print("OnBrowseButtonClicked")
         #TODO Create browse routine
         filename, filter = QtGui.QFileDialog.getOpenFileName(parent=self, caption='Open file', dir='.', filter='gcode files(*.gcode)')
         if filename:
@@ -112,7 +109,6 @@ class FilamentChanger(QtGui.QWidget):
             LookForLayers(filename)
 
     def onExportBtnClicked(self):
-        print("onExportBtnClicked")
         #TODO Create export routine
         filename, filter = QtGui.QFileDialog.getSaveFileName(parent=self, caption='Select output file', dir='.', filter='*.gcode')
         if filename:
@@ -122,7 +118,7 @@ class FilamentChanger(QtGui.QWidget):
             print("File saved!")
 
     def onResetBtnClicked(self):
-        print("onResetBtnClicked")
+        pass
         #TODO Create reset routine
 
     #Checkbox related functions
@@ -131,6 +127,7 @@ class FilamentChanger(QtGui.QWidget):
         if self.CuraCheckBox.isChecked():
             self.Simplify3DCheckBox.setChecked(False)
             self.Slic3rCheckBox.setChecked(False)
+
     def onSimplify3DCheckBoxChangedState(self,checked):
         self.Simplify3DCheckBox.setChecked(bool(checked))
         if self.Simplify3DCheckBox.isChecked():
@@ -144,15 +141,33 @@ class FilamentChanger(QtGui.QWidget):
     def onEnabledCheckBoxChangedState(self, checked):
         self.EnabledCheckBox.setChecked(bool(checked))
 
+    def getSimplify3DCheckBoxState(self):
+        return self.Simplify3DCheckBox.isChecked()
+    def getSlic3rCheckBoxState(self):
+        return self.Slic3rCheckBox.isChecked()
+    def getCuraCheckBoxState(self):
+        return self.CuraCheckBox.isChecked()
+
+
 def LookForLayers(filename):
     filename = os.path.abspath(os.path.realpath(filename))
     datafile = open(filename,'r')
     count = 0
     for line in datafile:
-        if 'layer' in line:
-            count += 1
-
+        if gui.getSimplify3DCheckBoxState():
+            if re.search('^; layer .+[0-9]',line):
+                count += 1
+        if gui.getCuraCheckBoxState():
+            if 'LAYER:' in line:
+                count += 1
+        if gui.getSlic3rCheckBoxState():
+            if 'layer' in line:
+                count += 1
     print("Found layer " + repr(count) +" times")
+    gui.LayerSpinBox.setMaximum(count - 1)
+    gui.LayerSpinBox.setMinimum(0)
+    gui.LayerLabel.setText('Layers in file ' + repr(count - 1))
+
 if __name__ == '__main__':
 
     # Create Qt app
