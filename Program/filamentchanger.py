@@ -38,10 +38,19 @@ class FilamentChanger(QtGui.QWidget):
         self.setWindowTitle("Filament Changer for Marlin 3D Printers")
 
         #Get a reference to all required widgets
+        #LineEdits
         self.FileLineEdit = self.findChild(QtGui.QLineEdit,'FileLineEdit')
-        self.LayerSpinBox = self.findChild(QtGui.QSpinBox,'LayerSpinBox')
-        self.EnabledCheckBox = self.findChild(QtGui.QCheckBox,'EnabledCheckBox')
 
+        #SpinBoxs
+        self.LayerSpinBox = self.findChild(QtGui.QSpinBox,'LayerSpinBox')
+
+        #CheckBox
+        self.EnabledCheckBox = self.findChild(QtGui.QCheckBox,'EnabledCheckBox')
+        self.CuraCheckBox = self.findChild(QtGui.QCheckBox,'CuraCheckBox')
+        self.Simplify3DCheckBox = self.findChild(QtGui.QCheckBox,'Simplify3DCheckBox')
+        self.Slic3rCheckBox = self.findChild(QtGui.QCheckBox,'Slic3rCheckBox')
+
+        #Buttons
         self.ExportBtn = self.findChild(QtGui.QPushButton,'ExportBtn')
         self.ResetBtn = self.findChild(QtGui.QPushButton,'ResetBtn')
         self.BrowseButton = self.findChild(QtGui.QPushButton,'BrowseButton')
@@ -52,11 +61,19 @@ class FilamentChanger(QtGui.QWidget):
         #self.LayerSpinBox.setMaximum(max_layer)
 
         #Connect slot and signals
+        #CheckBoxs
         self.EnabledCheckBox.stateChanged.connect(self.onEnabledCheckBoxChangedState)
+        self.CuraCheckBox.stateChanged.connect(self.onCuraCheckBoxChangedState)
+        self.Simplify3DCheckBox.stateChanged.connect(self.onSimplify3DCheckBoxChangedState)
+        self.Slic3rCheckBox.stateChanged.connect(self.onSlic3rCheckBoxChangedState)
+        #Buttons
         self.ExportBtn.clicked.connect(self.onExportBtnClicked)
         self.ResetBtn.clicked.connect(self.onResetBtnClicked)
         self.BrowseButton.clicked.connect(self.OnBrowseButtonClicked)
 
+    #functions
+
+    #buttons related functions
     def onSaveButtonClicked(self):
         reply = QtGui.QMessageBox.question(parent=self, title='Attention',
                                            text='File will be overwritten.\nDo you still want to proceed?',
@@ -65,6 +82,8 @@ class FilamentChanger(QtGui.QWidget):
 
         if reply == QtGui.QMessageBox.Yes:
             print("response is yes")
+            #TODO Add save function
+
     def OnBrowseButtonClicked(self):
         print("OnBrowseButtonClicked")
         #TODO Create browse routine
@@ -72,6 +91,7 @@ class FilamentChanger(QtGui.QWidget):
         if filename:
             self.FileLineEdit.setText(filename)
             LookForLayers(filename)
+
     def onExportBtnClicked(self):
         print("onExportBtnClicked")
         #TODO Create export routine
@@ -81,12 +101,30 @@ class FilamentChanger(QtGui.QWidget):
                 filename += '.gcode'
 
             print("File saved!")
+
     def onResetBtnClicked(self):
         print("onResetBtnClicked")
         #TODO Create reset routine
 
+    #Checkbox related functions
+    def onCuraCheckBoxChangedState(self,checked):
+        self.CuraCheckBox.setChecked(bool(checked))
+        if self.CuraCheckBox.isChecked():
+            self.Simplify3DCheckBox.setChecked(False)
+            self.Slic3rCheckBox.setChecked(False)
+    def onSimplify3DCheckBoxChangedState(self,checked):
+        self.Simplify3DCheckBox.setChecked(bool(checked))
+        if self.Simplify3DCheckBox.isChecked():
+            self.CuraCheckBox.setChecked(False)
+            self.Slic3rCheckBox.setChecked(False)
+    def onSlic3rCheckBoxChangedState(self,checked):
+        self.Slic3rCheckBox.setChecked(bool(checked))
+        if self.Slic3rCheckBox.isChecked():
+            self.Simplify3DCheckBox.setChecked(False)
+            self.CuraCheckBox.setChecked(False)
     def onEnabledCheckBoxChangedState(self, checked):
         self.EnabledCheckBox.setChecked(bool(checked))
+
 def LookForLayers(filename):
     filename = os.path.abspath(os.path.realpath(filename))
     datafile = open(filename,'r')
