@@ -44,6 +44,8 @@ class FilamentChanger(QtGui.QWidget):
         self.setLayout(layout)
         self.setWindowTitle("Filament Changer for Marlin 3D Printers")
         self.setWindowIcon(QtGui.QIcon(icon_path))
+        self.center()
+
         #Get a reference to all required widgets
         #LineEdits
         self.FileLineEdit = self.findChild(QtGui.QLineEdit,'FileLineEdit')
@@ -78,6 +80,16 @@ class FilamentChanger(QtGui.QWidget):
         self.ResetBtn.clicked.connect(self.onResetBtnClicked)
         self.BrowseButton.clicked.connect(self.OnBrowseButtonClicked)
 
+    def center(self):
+        frameGm = self.frameGeometry()
+        screen = QtGui.QApplication.desktop().screenNumber(QtGui.QApplication.desktop().cursor().pos())
+        centerPoint = QtGui.QApplication.desktop().screenGeometry(screen).center()
+        print(centerPoint)
+        finalPoint = centerPoint
+        finalPoint.setY(finalPoint.y() - finalPoint.y()/3)
+        print(finalPoint)
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())
     #functions
 
     #buttons related functions
