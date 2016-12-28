@@ -164,22 +164,10 @@ def LookForLayers(filename):
             if 'layer' in line:
                 count += 1
     print("Found layer " + repr(count) +" times")
-    if count != -0:
+    gui.LayerSpinBox.setMaximum(count - 1)
+    gui.LayerSpinBox.setMinimum(0)
+    gui.LayerLabel.setText('Layers in file ' + repr(count - 1))
 
-        gui.LayerSpinBox.setMaximum(count - 1)
-        gui.LayerSpinBox.setMinimum(0)
-        gui.LayerLabel.setText('Layers in file ' + repr(count - 1))
-    else:
-        #TODO add a warning for the user to know that the program was incorrect
-        print ("Incorrect program")
-        msg = QtGui.QMessageBox()
-        msg.setIcon(QtGui.QMessageBox.Information)
-
-        msg.setText("Be sure to choose the correct slicer program")
-        msg.setWindowTitle("Something went wrong..")
-        msg.setDetailedText("This programs uses different ways to indicate the layer.\nThe programs looks for characteristic text in the gcode file.")
-        msg.setStandardButtons(QtGui.QMessageBox.Ok)
-        msg.exec_()
 if __name__ == '__main__':
 
     # Create Qt app
