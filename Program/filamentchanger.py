@@ -1,6 +1,13 @@
 from PySide import QtCore,QtGui
 from PySide import QtUiTools
 import os, sys
+import os.path as osp
+import ctypes #For adding the icon to windows taskbar
+
+#Add icon info
+icon_path = osp.join(osp.dirname(sys.modules[__name__].__file__), 'icon_filament.png')
+myappid = u'DrMaker.filamentchanger' # arbitrary string
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 def load_ui(file_name, where=None):
     """
@@ -36,7 +43,7 @@ class FilamentChanger(QtGui.QWidget):
         layout.addWidget(main_widget)
         self.setLayout(layout)
         self.setWindowTitle("Filament Changer for Marlin 3D Printers")
-
+        self.setWindowIcon(QtGui.QIcon(icon_path))
         #Get a reference to all required widgets
         #LineEdits
         self.FileLineEdit = self.findChild(QtGui.QLineEdit,'FileLineEdit')
