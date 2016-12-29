@@ -161,7 +161,7 @@ def LookForLayers(filename):
             if 'LAYER:' in line:
                 count += 1
         if gui.getSlic3rCheckBoxState():
-            if 'layer' in line:
+            if re.search('^G1 Z.+[0-9]',line):
                 count += 1
     print("Found layer " + repr(count) +" times")
     if count != -0:
@@ -176,7 +176,7 @@ def LookForLayers(filename):
         msg.setIcon(QtGui.QMessageBox.Information)
 
         msg.setText("Be sure to choose the correct slicer program")
-        msg.setWindowTitle("Something went wrong..")
+        msg.setWindowTitle("Choose wisely")
         msg.setDetailedText("This programs uses different ways to indicate the layer.\nThe programs looks for characteristic text in the gcode file.")
         msg.setStandardButtons(QtGui.QMessageBox.Ok)
         msg.exec_()
