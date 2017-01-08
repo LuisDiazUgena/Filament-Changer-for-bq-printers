@@ -48,7 +48,7 @@ class FilamentChanger(QtGui.QWidget):
         layout.addWidget(main_widget)
         self.setLayout(layout)
         self.setWindowTitle("Filament Changer for Marlin 3D Printers")
-        if (platform.system()=='Windows')
+        if (platform.system()=='Windows'):
             self.setWindowIcon(QtGui.QIcon(icon_path))
         self.center()
 
