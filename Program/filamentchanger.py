@@ -4,11 +4,14 @@ import os, sys
 import os.path as osp
 import ctypes #For adding the icon to windows taskbar
 import re
+import platform
 
+print(platform.system())
 #Add icon info
-icon_path = osp.join(osp.dirname(sys.modules[__name__].__file__), 'icon_filament.png')
-myappid = u'DrMaker.filamentchanger' # arbitrary string
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+if(platform.system()=='Windows'):
+    icon_path = osp.join(osp.dirname(sys.modules[__name__].__file__), 'icon_filament.png')
+    myappid = u'DrMaker.filamentchanger' # arbitrary string
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 def load_ui(file_name, where=None):
     """
@@ -110,6 +113,14 @@ class FilamentChanger(QtGui.QWidget):
 
     def onExportBtnClicked(self):
         #TODO Create export routine
+        layerNumber = gui.LayerSpinBox.value()
+        print('layer selected is: ' + repr(layerNumber))
+        if gui.getSimplify3DCheckBoxState():
+            pass
+        if gui.getCuraCheckBoxState():
+            pass
+        if gui.getSlic3rCheckBoxState():
+            pass
         filename, filter = QtGui.QFileDialog.getSaveFileName(parent=self, caption='Select output file', dir='.', filter='*.gcode')
         if filename:
             if '.gcode' != filename[-6]:
@@ -151,7 +162,7 @@ class FilamentChanger(QtGui.QWidget):
 
 def LookForLayers(filename):
     filename = os.path.abspath(os.path.realpath(filename))
-    datafile = open(filename,'r')
+    datafile = open(filename,'r+')
     count = 0
     for line in datafile:
         if gui.getSimplify3DCheckBoxState():
@@ -165,21 +176,23 @@ def LookForLayers(filename):
                 count += 1
     print("Found layer " + repr(count) +" times")
     if count != -0:
-
-        gui.LayerSpinBox.setMaximum(count - 1)
+        #Set the number of layers in the gui
+        if gui.getSimplify3DCheckBoxState():
+            gui.LayerSpinBox.setMaximum(count)
+        else:
+            gui.LayerSpinBox.setMaximum(count - 1)
         gui.LayerSpinBox.setMinimum(0)
         gui.LayerLabel.setText('Layers in file ' + repr(count - 1))
     else:
-        #TODO add a warning for the user to know that the program was incorrect
         print ("Incorrect program")
         msg = QtGui.QMessageBox()
         msg.setIcon(QtGui.QMessageBox.Information)
-
         msg.setText("Be sure to choose the correct slicer program")
         msg.setWindowTitle("Choose wisely")
         msg.setDetailedText("This programs uses different ways to indicate the layer.\nThe programs looks for characteristic text in the gcode file.")
         msg.setStandardButtons(QtGui.QMessageBox.Ok)
         msg.exec_()
+
 if __name__ == '__main__':
 
     # Create Qt app
